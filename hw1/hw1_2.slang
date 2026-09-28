@@ -18,9 +18,9 @@ void compute_main(uint2 tid : SV_DispatchThreadID,
         return;
     }
 
-    image[tid] = float4(1.0);
+    image[tid] = float4(0.5, 0.5, 0.5, 1.0);
 
-    float2 p = float2(tid.x + 0.5, tid.y + 0.5);
+    float2 p = float2( tid.x + 0.5, height - (tid.y + 0.5) );
     float min_distance = 1e10;
 
     for (int i = 0; i < num_polyline; i++) {
@@ -64,18 +64,18 @@ float distance_to_segment(float2 p, float2 a, float2 b) {
 }
 
 /* md
-For each edge from $\vec{a}$ to $\vec{b}$, check if a horizontal ray from $\vec{p}$ to the right crosses it.
+    For each edge from $\vec{a}$ to $\vec{b}$, check if a horizontal ray from $\vec{p}$ to the right crosses it.
 
-**Edge crosses ray if:**
-$$(a_y < p_y \leq b_y) \lor (b_y < p_y \leq a_y)$$
+    **Edge crosses ray if:**
+    $$(a_y < p_y \leq b_y) \lor (b_y < p_y \leq a_y)$$
 
-**If it crosses, find x-intersection:**
-$$x_{int} = a_x + \frac{p_y - a_y}{b_y - a_y}(b_x - a_x)$$
+    **If it crosses, find x-intersection:**
+    $$x_{int} = a_x + \frac{p_y - a_y}{b_y - a_y}(b_x - a_x)$$
 
-**If $x_{int} > p_x$, increment crossing count.**
+    **If $x_{int} > p_x$, increment crossing count.**
 
-**Point is inside if:**
-$$(\text{crossings} \bmod 2) == 1$$
+    **Point is inside if:**
+    $$(\text{crossings} \bmod 2) == 1$$
 */
 bool is_point_inside_polyline_even_odd(
     float2 point,
@@ -108,20 +108,14 @@ bool is_point_inside_polyline_even_odd(
 }
 
 /* md
-For each edge from $\vec{a}$ to $\vec{b}$, cast a horizontal
-ray from $\vec{p}$ to the right.
+    For each edge from $\vec{a}$ to $\vec{b}$, cast a horizontal
+    ray from $\vec{p}$ to the right.
 
-If the ray crosses an edge moving in the positive $y$ direction:
+    If ray crosses an edge moving in: 
+    - $+y$ direction: $w++$
+    - $-y$ direction: $w--$
 
-$$w \leftarrow w + 1$$
-
-If it crosses an edge moving in the negative $y$ direction:
-
-$$w \leftarrow w - 1$$
-
-The point is inside if:
-
-$$w \neq 0$$
+    Point is inside if $w \neq 0$
 */
 bool is_point_inside_polyline_non_zero(
     float2 point,
