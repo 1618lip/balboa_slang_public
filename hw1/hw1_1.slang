@@ -13,7 +13,7 @@ void compute_main(uint2 tid : SV_DispatchThreadID,
 
     image[tid] = float4(0.5, 0.5, 0.5, 1.0);
     float2 p = float2(tid.x + 0.5, height - (tid.y + 0.5));
-    // TODO: your code here
+    
     if (length(p - center) <= radius) {
         image[tid] = float4(color, 1.0);
     }
